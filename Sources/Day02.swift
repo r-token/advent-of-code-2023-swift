@@ -37,9 +37,27 @@ struct Day02: AdventDay {
         return sum
     }
     
-    // Replace this with your solution for the second part of the day's challenge.
+    // What is the fewest number of cubes of each color that could have been in the bag to make the game possible?
+    // The power of a set of cubes is equal to the numbers of red, green, and blue cubes multiplied together.
+    // The power of the minimum set of cubes in game 1 is 48. In games 2-5 it was 12, 1560, 630, and 36, respectively.
+    // Adding up these five powers produces the sum 2286.
+    // For each game, find the minimum set of cubes that must have been present. What is the sum of the power of these sets?
     func part2() -> Any {
-        return 0
+        var gamePowers = [Int]()
+        for row in entities {
+            if let game = getGameInfo(from: row) {
+                let minimumCubes = getMinimumCubesOfEachColor(for: game)
+                let powers = minimumCubes.redAmount * minimumCubes.greenAmount * minimumCubes.blueAmount
+                gamePowers.append(powers)
+            }
+        }
+        
+        var sum = 0
+        for power in gamePowers {
+            sum += power
+        }
+        
+        return sum
     }
     
     private func getGameInfo(from row: String) -> GameInfo? {
@@ -108,6 +126,29 @@ struct Day02: AdventDay {
         }
         print("returning true for game \(gameInfo.id)")
         return true
+    }
+    
+    func getMinimumCubesOfEachColor(for game: GameInfo) -> Round {
+        var minimumReds = 0
+        var minimumGreens = 0
+        var minimumBlues = 0
+        
+        for round in game.rounds {
+            if minimumReds < round.redAmount {
+                minimumReds = round.redAmount
+            }
+            
+            if minimumGreens < round.greenAmount {
+                minimumGreens = round.greenAmount
+            }
+            
+            if minimumBlues < round.blueAmount {
+                minimumBlues = round.blueAmount
+            }
+        }
+        
+        let minimumAmounts = Round(redAmount: minimumReds, greenAmount: minimumGreens, blueAmount: minimumBlues)
+        return minimumAmounts
     }
 }
 
