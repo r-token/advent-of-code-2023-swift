@@ -153,9 +153,3 @@ struct StringDigit {
     var isValid: Bool
     var number: String?
 }
-
-extension Character {
-    var isDigit: Bool {
-        return "0"..."9" ~= self
-    }
-}
