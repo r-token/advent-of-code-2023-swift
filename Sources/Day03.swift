@@ -12,14 +12,16 @@ struct Day03: AdventDay {
     // Splits input data into its component parts and convert from string.
     var entities: [[String]] {
         data.split(separator: "\n").map {
-            $0.split(separator: "").compactMap { String($0) }
+            $0.map { String($0) }
         }
     }
     
+    let gridSize = 140
     let validSymbols = ["*", "&", "@", "/", "+", "%", "-", "#", "$", "="]
     
     // Replace this with your solution for the first part of the day's challenge.
     func part1() -> Any {
+        print("entities: \(entities.count)")
         let numbersWithAdjacentSymbols = getValidNumbers(from: entities)
         
         var sum = 0
@@ -45,7 +47,7 @@ struct Day03: AdventDay {
                     foundNumber = true
                     currentDigit.append(colData)
                     
-                    if colIdx == 139 {
+                    if colIdx == gridSize - 1 {
                         // found number at the end of the row; check for symbols and add it before continuing to next row
                         if numberHasAdjacentSymbols(matrix: matrix, numberOfDigits: currentDigit.count, currentRow: rowIdx, currentColumn: colIdx) {
                             if let intDigit = Int(currentDigit) {
@@ -115,7 +117,7 @@ struct Day03: AdventDay {
                 newColumn += 1
             }
             
-            if newRow >= 0 && newRow <= 139 && newColumn >= 0 && newColumn <= 139 {
+            if newRow >= 0 && newRow < gridSize && newColumn >= 0 && newColumn < gridSize {
                 let itemToCheck = matrix[newRow][newColumn]
                 if itemContainsSymbol(directionToCheck, itemToCheck: itemToCheck) {
                     return true
