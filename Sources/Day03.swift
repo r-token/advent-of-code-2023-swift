@@ -16,12 +16,19 @@ struct Day03: AdventDay {
         }
     }
     
-    let gridSize = 140
+    var rowCount: Int {
+        data.split(separator: "\n").count
+    }
+    
+    var colCount: Int {
+        data.split(separator: "\n")[0].split(separator: "").count
+    }
+    
     let validSymbols = ["*", "&", "@", "/", "+", "%", "-", "#", "$", "="]
     
     // Replace this with your solution for the first part of the day's challenge.
     func part1() -> Any {
-        print("entities: \(entities.count)")
+        print("grid size: \(rowCount) x \(colCount)")
         let numbersWithAdjacentSymbols = getValidNumbers(from: entities)
         
         var sum = 0
@@ -47,8 +54,9 @@ struct Day03: AdventDay {
                     foundNumber = true
                     currentDigit.append(colData)
                     
-                    if colIdx == gridSize - 1 {
+                    if colIdx == colCount - 1 {
                         // found number at the end of the row; check for symbols and add it before continuing to next row
+                        // print("found number: \(currentDigit)")
                         if numberHasAdjacentSymbols(matrix: matrix, numberOfDigits: currentDigit.count, currentRow: rowIdx, currentColumn: colIdx) {
                             if let intDigit = Int(currentDigit) {
                                 print("adding \(intDigit) to validNumbers array")
@@ -101,7 +109,8 @@ struct Day03: AdventDay {
         var newRow = currentRow
         var newColumn = currentColumn
         for _ in 1...spacesToCheck {
-            let directionToCheck = getNextDirectionToCheck(matrix: matrix, numberOfDigits: numberOfDigits, stepNumber: stepNumber)
+            let directionToCheck = getNextDirectionToCheck(matrix: matrix, numberOfDigits: numberOfDigits, stepNumber: stepNumber, columnNum: currentColumn, currentItem: matrix[currentRow][currentColumn])
+            // print("checking \(directionToCheck)")
             stepNumber += 1
             
             switch directionToCheck {
@@ -117,7 +126,7 @@ struct Day03: AdventDay {
                 newColumn += 1
             }
             
-            if newRow >= 0 && newRow < gridSize && newColumn >= 0 && newColumn < gridSize {
+            if newRow >= 0 && newRow < rowCount && newColumn >= 0 && newColumn < colCount {
                 let itemToCheck = matrix[newRow][newColumn]
                 if itemContainsSymbol(directionToCheck, itemToCheck: itemToCheck) {
                     return true
@@ -128,7 +137,7 @@ struct Day03: AdventDay {
         return false
     }
     
-    private func getNextDirectionToCheck(matrix: [[String]], numberOfDigits: Int, stepNumber: Int) -> Direction {
+    private func getNextDirectionToCheck(matrix: [[String]], numberOfDigits: Int, stepNumber: Int, columnNum: Int, currentItem: String) -> Direction {
         switch stepNumber {
         case 1:
             return .current
@@ -137,6 +146,9 @@ struct Day03: AdventDay {
         case 3, 4:
             return .left
         case 5:
+            if columnNum == entities[0].count - 1 && currentItem.isDigit {
+                return .below
+            }
             switch numberOfDigits {
             case 1:
                 return .below
