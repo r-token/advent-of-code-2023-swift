@@ -40,8 +40,13 @@ struct Day03: AdventDay {
     
     // Replace this with your solution for the second part of the day's challenge.
     func part2() -> Any {
-        // Sum the maximum entries in each set of data
-        return 0
+        let gearRatios = getGearRatios(from: entities)
+        
+        var sum = 0
+        for ratio in gearRatios {
+            sum += ratio
+        }
+        return sum
     }
     
     private func getValidNumbers(from matrix: [[String]]) -> [Int] {
@@ -88,6 +93,93 @@ struct Day03: AdventDay {
         return validNumbers
     }
     
+    private func getGearRatios(from matrix: [[String]]) -> [Int] {
+        var gearRatios = [Int]()
+        for (rowIdx, rowData) in matrix.enumerated() {
+            for (colIdx, colData) in rowData.enumerated() {
+                if colData == "*" {
+                    let adjacentNumbers = getAdjacentNumbers(for: matrix, currentRow: rowIdx, currentColumn: colIdx)
+                    if adjacentNumbers.count == 2 {
+                        let gearRatio = adjacentNumbers[0] * adjacentNumbers[1]
+                        print("found gear ratio of \(gearRatio) between \(adjacentNumbers[0]) and \(adjacentNumbers[1])")
+                        gearRatios.append(gearRatio)
+                    }
+                }
+            }
+        }
+        
+        return gearRatios
+    }
+    
+    private func getAdjacentNumbers(for matrix: [[String]], currentRow: Int, currentColumn: Int) -> [Int] {
+        var adjacentNumbers = Set<Int>()
+        var stepNumber = 1
+        var newRow = currentRow
+        var newColumn = currentColumn
+        
+        for _ in 1...8 {
+            let directionToCheck = getNextDirectionToCheck(matrix: matrix, numberOfDigits: 1, stepNumber: stepNumber, columnNum: currentColumn, currentItem: matrix[currentRow][currentColumn], gear: true)
+            // print("checking \(directionToCheck)")
+            stepNumber += 1
+            
+            switch directionToCheck {
+            case .current:
+                break
+            case .above:
+                newRow -= 1
+            case .below:
+                newRow += 1
+            case .left:
+                newColumn -= 1
+            case .right:
+                newColumn += 1
+            }
+            
+            var currentDigit = ""
+            if newRow >= 0 && newRow < rowCount && newColumn >= 0 && newColumn < colCount {
+                let itemToCheck = matrix[newRow][newColumn]
+                if itemToCheck.isDigit {
+                    currentDigit.append(itemToCheck)
+                    let leftOne = matrix[newRow][newColumn - 1]
+                    let rightOne = matrix[newRow][newColumn + 1]
+                    if leftOne.isDigit {
+                        currentDigit.insert(leftOne.first!, at: currentDigit.startIndex)
+                        
+                        if newColumn > 1 {
+                            let leftTwo = matrix[newRow][newColumn - 2]
+                            if leftTwo.isDigit {
+                                currentDigit.insert(leftTwo.first!, at: currentDigit.startIndex)
+                            } else {
+                                if rightOne.isDigit {
+                                    currentDigit.insert(rightOne.first!, at: currentDigit.endIndex)
+                                }
+                            }
+                        }
+                    } else if rightOne.isDigit {
+                        currentDigit.insert(rightOne.first!, at: currentDigit.endIndex)
+                        
+                        if newColumn < colCount - 2 {
+                            let rightTwo = matrix[newRow][newColumn + 2]
+                            if rightTwo.isDigit {
+                                currentDigit.insert(rightTwo.first!, at: currentDigit.endIndex)
+                            } else {
+                                if leftOne.isDigit {
+                                    currentDigit.insert(leftOne.first!, at: currentDigit.startIndex)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if let intDigit = Int(currentDigit) {
+                    adjacentNumbers.insert(intDigit)
+                }
+            }
+        }
+        
+        return Array(adjacentNumbers)
+    }
+    
     private func numberHasAdjacentSymbols(matrix: [[String]], numberOfDigits: Int, currentRow: Int, currentColumn: Int) -> Bool {
         var spacesToCheck = 0
         switch numberOfDigits {
@@ -109,7 +201,7 @@ struct Day03: AdventDay {
         var newRow = currentRow
         var newColumn = currentColumn
         for _ in 1...spacesToCheck {
-            let directionToCheck = getNextDirectionToCheck(matrix: matrix, numberOfDigits: numberOfDigits, stepNumber: stepNumber, columnNum: currentColumn, currentItem: matrix[currentRow][currentColumn])
+            let directionToCheck = getNextDirectionToCheck(matrix: matrix, numberOfDigits: numberOfDigits, stepNumber: stepNumber, columnNum: currentColumn, currentItem: matrix[currentRow][currentColumn], gear: false)
             // print("checking \(directionToCheck)")
             stepNumber += 1
             
@@ -137,10 +229,14 @@ struct Day03: AdventDay {
         return false
     }
     
-    private func getNextDirectionToCheck(matrix: [[String]], numberOfDigits: Int, stepNumber: Int, columnNum: Int, currentItem: String) -> Direction {
+    private func getNextDirectionToCheck(matrix: [[String]], numberOfDigits: Int, stepNumber: Int, columnNum: Int, currentItem: String, gear: Bool) -> Direction {
         switch stepNumber {
         case 1:
-            return .current
+            if gear {
+                return .right
+            } else {
+                return .current
+            }
         case 2:
             return .above
         case 3, 4:
