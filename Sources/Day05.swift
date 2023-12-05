@@ -58,10 +58,23 @@ struct Day05: AdventDay {
         }
     }
 
-    // Replace this with your solution for the second part of the day's challenge.
+    // The seeds: line actually describes ranges of seed numbers.
+    // The values on the initial seeds: line come in pairs
+    // Within each pair, the first value is the start of the range and the second value is the length of the range.
     func part2() -> Any {
-        // Sum the maximum entries in each set of data
-        return 0
+        var locationNumbers = [Int]()
+        let seedNumbers = getSeedNumbersPartTwo(from: seeds)
+
+        for seedNumber in seedNumbers {
+            let locationNumber = traverseTheAlmanac(for: seedNumber)
+            locationNumbers.append(locationNumber)
+        }
+
+        if let smallestLocation = locationNumbers.min() {
+            return smallestLocation
+        } else {
+            return 0
+        }
     }
 
     private func getSeedNumbers(from seedsString: String) -> [Int] {
@@ -73,6 +86,27 @@ struct Day05: AdventDay {
             }
         }
         return seedInts
+    }
+
+    private func getSeedNumbersPartTwo(from seedsString: String) -> [Int] {
+        var newSeedNumbers = [Int]()
+        let seedInts = getSeedNumbers(from: seedsString)
+
+        var tempNumbers = [Int]()
+        for seedInt in seedInts {
+            tempNumbers.append(seedInt)
+            if tempNumbers.count % 2 == 0 {
+                let startRange = tempNumbers[0]
+                let rangeLength = tempNumbers[1]
+                for number in startRange..<startRange+rangeLength {
+                    newSeedNumbers.append(number)
+                }
+                tempNumbers.removeAll()
+            }
+        }
+
+        print("newSeedNumbers: \(newSeedNumbers)")
+        return newSeedNumbers
     }
 
     private func traverseTheAlmanac(for seedNumber: Int) -> Int {
